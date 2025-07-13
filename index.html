@@ -1,35 +1,476 @@
 <!DOCTYPE html>
-<html lang="kr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- 브라우저 마다 다른 CSS 표현방식 통일  -->
-    <!-- 구글에 reset .css cdn 으로 검색하기 -->
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/reset-css@5.0.2/reset.min.css"
-    />
-    <!-- 웹 폰트 사용 : pretendard github 검색 -->
-     <!-- font-family 이름은 "Pretendard Variable" -->
-    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>고급 공 피하기 게임</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-green: #00ff9d;
+            --neon-green-glow: rgba(0, 255, 157, 0.3);
+            --neon-pink: #ff00ff;
+            --neon-pink-glow: rgba(255, 0, 255, 0.3);
+            --dark-bg: #0a0a0a;
+            --dark-surface: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+        }
 
-    <!-- 사용자 정의 CSS 연결 -->
-     <link rel="stylesheet" href="./css/common.css">
-     <link rel="stylesheet" href="./css/home.css">
-    <title>Document</title>
-  </head>
-  <body>
-    <h2 class="page-subtitle">
-      HiMedia Academy
-    </h2>
-    <h1 class="page-title">
-      내 안에 숨어있는 <br>
-      직업캐 찾기!
-    </h1>
-    <img src="./images/main_character.png" 
-      class="character"  alt="캐릭터">
-    <a href="./question.html" class="btn btn-orange">
-      본캐 찾으러 Go!
-    </a>
-  </body>
-</html>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        body {
+            background: linear-gradient(45deg, var(--dark-bg), #1a1a2e, #16213e);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Noto Sans KR', sans-serif;
+            color: var(--text-primary);
+        }
+
+        #game-container {
+            width: 400px;
+            height: 600px;
+            position: relative;
+            border: 2px solid var(--neon-green);
+            border-radius: 20px;
+            overflow: hidden;
+            background: var(--dark-surface);
+            box-shadow: 0 0 20px var(--neon-green-glow),
+                       inset 0 0 20px var(--neon-green-glow);
+        }
+
+        #character {
+            width: 30px;
+            height: 30px;
+            background: var(--neon-green);
+            border-radius: 50%;
+            position: absolute;
+            bottom: 20px;
+            left: 185px;
+            box-shadow: 0 0 15px var(--neon-green-glow);
+            transition: left 0.1s ease;
+            z-index: 10;
+        }
+
+        .ball {
+            width: 20px;
+            height: 20px;
+            background: var(--neon-pink);
+            border-radius: 50%;
+            position: absolute;
+            box-shadow: 0 0 10px var(--neon-pink-glow);
+        }
+
+        #stats {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 18px;
+            animation: slideDown 0.5s ease;
+            text-shadow: 0 0 10px var(--neon-green);
+        }
+
+        .difficulty-indicator {
+            position: absolute;
+            top: 60px;
+            left: 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+            color: var(--text-secondary);
+            background: rgba(0, 255, 157, 0.1);
+            padding: 8px 16px;
+            border-radius: 12px;
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            border: 1px solid var(--neon-green-glow);
+            box-shadow: 0 0 10px var(--neon-green-glow);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .difficulty-indicator #level {
+            color: var(--neon-green);
+            font-weight: bold;
+            font-size: 20px;
+            text-shadow: 0 0 10px var(--neon-green);
+        }
+
+        #game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(10, 10, 10, 0.95);
+            padding: 40px 60px;
+            border-radius: 20px;
+            text-align: center;
+            display: none;
+            border: 2px solid var(--neon-green);
+            box-shadow: 0 0 30px var(--neon-green-glow);
+            animation: fadeIn 0.5s ease;
+            min-width: 300px;
+        }
+
+        #game-over h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 32px;
+            margin-bottom: 20px;
+            color: var(--neon-green);
+            text-shadow: 0 0 10px var(--neon-green);
+            white-space: nowrap;
+        }
+
+        #game-over p {
+            font-size: 24px;
+            margin-bottom: 30px;
+            color: var(--text-secondary);
+        }
+
+        #restart-btn {
+            background: transparent;
+            color: var(--neon-green);
+            border: 2px solid var(--neon-green);
+            padding: 12px 30px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #restart-btn:hover {
+            background: var(--neon-green);
+            color: var(--dark-bg);
+            box-shadow: 0 0 20px var(--neon-green-glow);
+            transform: translateY(-2px);
+        }
+
+        #restart-btn:active {
+            transform: translateY(1px);
+        }
+
+        @keyframes fall {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            5% {
+                opacity: 1;
+            }
+            to {
+                transform: translateY(620px);
+                opacity: 1;
+            }
+        }
+
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 10, 0.98);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            animation: fadeIn 0.8s ease;
+        }
+
+        #start-screen h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 36px;
+            color: var(--neon-green);
+            margin-bottom: 30px;
+            text-align: center;
+            text-shadow: 0 0 20px var(--neon-green);
+            animation: pulse 2s infinite;
+        }
+
+        .game-description {
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 40px;
+            line-height: 1.6;
+            padding: 0 20px;
+            font-size: 16px;
+        }
+
+        .control-info {
+            background: rgba(0, 255, 157, 0.1);
+            padding: 15px 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+            border: 1px solid var(--neon-green-glow);
+            box-shadow: 0 0 10px var(--neon-green-glow);
+        }
+
+        #start-btn {
+            background: transparent;
+            color: var(--neon-green);
+            border: 2px solid var(--neon-green);
+            padding: 15px 40px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        #start-btn:hover {
+            background: var(--neon-green);
+            color: var(--dark-bg);
+            box-shadow: 0 0 20px var(--neon-green-glow);
+            transform: translateY(-2px);
+        }
+
+        #start-btn:active {
+            transform: translateY(1px);
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="start-screen">
+            <h1>공 피하기 게임</h1>
+            <div class="game-description">
+                떨어지는 공을 피해 오래 살아남으세요!<br>
+                시간이 지날수록 난이도가 올라갑니다.
+            </div>
+            <div class="control-info">
+                ← → 방향키로 이동
+            </div>
+            <button id="start-btn">게임 시작</button>
+        </div>
+        <div id="stats">
+            <div>시간: <span id="time">0</span>초</div>
+            <div>점수: <span id="score">0</span></div>
+        </div>
+        <div class="difficulty-indicator">레벨 <span id="level">1</span></div>
+        <div id="character"></div>
+        <div id="game-over">
+            <h2>게임 오버!</h2>
+            <p>최종 점수: <span id="final-score">0</span></p>
+            <button id="restart-btn">다시 시작</button>
+        </div>
+    </div>
+
+    <script>
+        const gameContainer = document.getElementById('game-container');
+        const character = document.getElementById('character');
+        const gameOver = document.getElementById('game-over');
+        const restartBtn = document.getElementById('restart-btn');
+        const scoreDisplay = document.getElementById('score');
+        const timeDisplay = document.getElementById('time');
+        const finalScoreDisplay = document.getElementById('final-score');
+        const levelDisplay = document.getElementById('level');
+        const startScreen = document.getElementById('start-screen');
+        const startBtn = document.getElementById('start-btn');
+
+        let isGameOver = false;
+        let score = 0;
+        let gameTime = 0;
+        let characterPosition = 185;
+        let ballInterval;
+        let scoreInterval;
+        let difficultyInterval;
+        let currentLevel = 1;
+        let ballSpeed = 2;
+        let ballFrequency = 1000;
+        let keys = { ArrowLeft: false, ArrowRight: false };
+
+        // 캐릭터 이동 처리
+        function updateCharacterPosition() {
+            if (keys.ArrowLeft && characterPosition > 0) {
+                characterPosition = Math.max(0, characterPosition - 8);
+            }
+            if (keys.ArrowRight && characterPosition < 370) {
+                characterPosition = Math.min(370, characterPosition + 8);
+            }
+            character.style.left = characterPosition + 'px';
+        }
+
+        // 키보드 이벤트
+        document.addEventListener('keydown', (e) => {
+            if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && !keys[e.key]) {
+                keys[e.key] = true;
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                keys[e.key] = false;
+            }
+        });
+
+        // 공 생성
+        function createBall() {
+            if (isGameOver) return;
+
+            const ball = document.createElement('div');
+            ball.className = 'ball';
+            ball.style.left = Math.random() * (380) + 'px';
+            ball.style.animation = `fall ${3/ballSpeed}s linear`;
+            gameContainer.appendChild(ball);
+
+            // 충돌 감지
+            const checkCollision = setInterval(() => {
+                if (isGameOver) {
+                    clearInterval(checkCollision);
+                    return;
+                }
+
+                const ballRect = ball.getBoundingClientRect();
+                const characterRect = character.getBoundingClientRect();
+
+                if (
+                    ballRect.left < characterRect.right &&
+                    ballRect.right > characterRect.left &&
+                    ballRect.bottom > characterRect.top &&
+                    ballRect.top < characterRect.bottom
+                ) {
+                    endGame();
+                    clearInterval(checkCollision);
+                }
+            }, 10);
+
+            // 애니메이션 종료 후 공 제거
+            ball.addEventListener('animationend', () => {
+                ball.remove();
+                clearInterval(checkCollision);
+            });
+        }
+
+        // 난이도 증가
+        function increaseDifficulty() {
+            currentLevel++;
+            levelDisplay.textContent = currentLevel;
+            
+            // 공 속도 증가 (최대 4배)
+            ballSpeed = Math.min(4, ballSpeed + 0.2);
+            
+            // 공 생성 주기 감소 (최소 300ms까지)
+            ballFrequency = Math.max(300, 1000 - (currentLevel * 100));
+        }
+
+        // 게임 종료
+        function endGame() {
+            isGameOver = true;
+            clearInterval(ballInterval);
+            clearInterval(scoreInterval);
+            clearInterval(difficultyInterval);
+            gameOver.style.display = 'block';
+            finalScoreDisplay.textContent = score;
+        }
+
+        // 게임 시작
+        function initGame() {
+            isGameOver = false;
+            score = 0;
+            gameTime = 0;
+            currentLevel = 1;
+            ballSpeed = 2;
+            ballFrequency = 1000;
+            characterPosition = 185;
+            
+            // 화면 업데이트
+            scoreDisplay.textContent = '0';
+            timeDisplay.textContent = '0';
+            levelDisplay.textContent = '1';
+            character.style.left = characterPosition + 'px';
+            gameOver.style.display = 'none';
+            startScreen.style.display = 'none';
+
+            // 기존 공 제거
+            const balls = document.querySelectorAll('.ball');
+            balls.forEach(ball => ball.remove());
+        }
+
+        // 게임 시작 함수 수정
+        function startGame() {
+            initGame();
+
+            // 인터벌 시작 (초기: 1초마다 공 생성)
+            ballInterval = setInterval(createBall, ballFrequency);
+            
+            // 점수 증가 (1초마다)
+            scoreInterval = setInterval(() => {
+                if (!isGameOver) {
+                    score++;
+                    gameTime++;
+                    scoreDisplay.textContent = score;
+                    timeDisplay.textContent = gameTime;
+                }
+            }, 1000);
+
+            // 난이도 증가 (7초마다) - 더 자주 난이도 증가
+            difficultyInterval = setInterval(increaseDifficulty, 7000);
+        }
+
+        // 캐릭터 이동 업데이트 (부드러운 이동을 위한 루프)
+        function gameLoop() {
+            if (!isGameOver) {
+                updateCharacterPosition();
+            }
+            requestAnimationFrame(gameLoop);
+        }
+
+        // 이벤트 리스너
+        startBtn.addEventListener('click', startGame);
+        restartBtn.addEventListener('click', () => {
+            gameOver.style.display = 'none';
+            startScreen.style.display = 'flex';
+        });
+
+        // 게임 루프 시작
+        gameLoop();
+    </script>
+</body>
+</html> 
